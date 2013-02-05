@@ -1,6 +1,6 @@
 from flask import render_template
 
-from pyoos.collectors.wqp.wqp_rest import WqpRest
+from chisp1_sos.models.station import get_station_feature
 
 import dateutil.parser as dateparser
 from datetime import timedelta
@@ -20,10 +20,12 @@ class GetObservation(object):
         else:
             self.obs_props = list(set(self.obs_props.split(",")))
     
-        wq = WqpRest()
-        station = wq.get_metadata(siteid=self.offering)
-        if station.failed:
+
+        station, publisher = get_station_feature(self.procedure)
+
+        if station is None:
             return render_template("error.xml", parameter="offering", value="Invalid value")
+
 
         activities = wq.get_data(siteid=self.offering).activities
 

@@ -1,4 +1,5 @@
 Flask
+Shapely
 gunicorn
 requests
 pytz

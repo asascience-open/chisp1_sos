@@ -1,4 +1,5 @@
 from flask import Flask
+import sqlite3
 
 # Create application object
 app = Flask(__name__)
@@ -15,4 +16,5 @@ if app.config.get('LOG_FILE') == True:
     app.logger.addHandler(file_handler)
 
 # Import everything
-import wqp_sos.views
+import chisp1_sos.views
+import chisp1_sos.models

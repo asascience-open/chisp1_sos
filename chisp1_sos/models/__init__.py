@@ -1,0 +1,1 @@
+from chisp1_sos.models import offering, station

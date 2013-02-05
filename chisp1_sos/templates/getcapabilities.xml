@@ -2,7 +2,7 @@
 <sos:Capabilities xmlns:sos="http://www.opengis.net/sos/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:gml="http://www.opengis.net/gml" xmlns:om="http://www.opengis.net/om/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sos/1.0 http://schemas.opengis.net/sos/1.0.0/sosAll.xsd" version="1.0.0">
   <ows:ServiceIdentification>
     <ows:Title>CHISP1 SOS</ows:Title>
-    <ows:Abstract>CHISP1 SOS</ows:Abstract>
+    <ows:Abstract>CHISP1 SOS - Containging data from the USGS WaterQualityData.us and the Ontario Ministry of the Environment</ows:Abstract>
     <ows:Keywords>
       <ows:Keyword>Water Quality</ows:Keyword>
       <ows:Keyword>STORET</ows:Keyword>
@@ -11,6 +11,7 @@
       <ows:Keyword>USEPA</ows:Keyword>
       <ows:Keyword>EPA</ows:Keyword>
       <ows:Keyword>WaterQuality</ows:Keyword>
+      <ows:Keyword>PWQMN</ows:Keyword>
     </ows:Keywords>
     <ows:ServiceType codeSpace="http://opengeospatial.net">OGC:SOS</ows:ServiceType>
     <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>
@@ -19,7 +20,7 @@
   </ows:ServiceIdentification>
   <ows:ServiceProvider>
     <ows:ProviderName>CHISP1 SOS</ows:ProviderName>
-    <ows:ProviderSite xlink:href="http://sdf.ndbc.noaa.gov/"/>
+    <ows:ProviderSite xlink:href="https://portal.opengeospatial.org/wiki/CHISP1/WebHome"/>
     <ows:ServiceContact>
       <ows:IndividualName>Kyle Wilcox</ows:IndividualName>
       <ows:ContactInfo>
@@ -101,29 +102,44 @@
   </ows:OperationsMetadata>
   <sos:Contents>
     <sos:ObservationOfferingList>
-      <sos:ObservationOffering gml:id="network-all">
-        <gml:description>All stations available in the WQP SOS</gml:description>
-        <gml:name>urn:ioos:network:wqp:all</gml:name>
+      {%- for o in offerings %}
+      <sos:ObservationOffering gml:id="{{ o.id }}">
+        <gml:description>{{ o.description }}</gml:description>
+        <gml:name>{{ o.name }}</gml:name>
         <gml:srsName>http://www.opengis.net/def/crs/EPSG/0/4326</gml:srsName>
         <gml:boundedBy>
           <gml:Envelope srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
-            <gml:lowerCorner>-90 -180</gml:lowerCorner>
-            <gml:upperCorner>90 180</gml:upperCorner>
+            <gml:lowerCorner>{{ o.bbox[0] }} {{ o.bbox[1] }}</gml:lowerCorner>
+            <gml:upperCorner>{{ o.bbox[2] }} {{ o.bbox[3] }}</gml:upperCorner>
           </gml:Envelope>
         </gml:boundedBy>
         <sos:time>
           <gml:TimePeriod>
-            <gml:beginPosition>0001-01-01T00:00:00Z</gml:beginPosition>
-            <gml:endPosition indeterminatePosition="now"/>
+            <gml:beginPosition>{{ o.starting.isoformat() }}</gml:beginPosition>
+            {%- if o.starting == "now" %}
+              <gml:endPosition indeterminatePosition="now"/>
+            {%- else %}
+              <gml:endPosition>{{ o.ending.isoformat() }}</gml:endPosition>
+            {%- endif %}
           </gml:TimePeriod>
         </sos:time>
-        <sos:procedure xlink:href="urn:ioos:network:wqp:all"/>
-        <sos:observedProperty xlink:href="lots"/>
-        <sos:featureOfInterest xlink:href="urn:cgi:Feature:CGI:EarthOcean"/>
+        {%- for p in o.procedures %}
+          <sos:procedure xlink:href="{{ p }}" />
+        {%- endfor %}
+        {%- for p in o.procedures %}
+          <sos:procedure xlink:href="{{ p }}" />
+        {%- endfor %}
+        {%- for p in o.observedProperties %}
+          <sos:observedProperty xlink:href="{{ p }}" />
+        {%- endfor %}
+        {%- for p in o.features %}
+          <sos:featureOfInterest xlink:href="{{ p }}" />
+        {%- endfor %}
         <sos:responseFormat>text/xml;subtype="om/1.0.0"</sos:responseFormat>
         <sos:resultModel>om:ObservationCollection</sos:resultModel>
         <sos:responseMode>inline</sos:responseMode>
       </sos:ObservationOffering>
+    {%- endfor %}
     </sos:ObservationOfferingList>
   </sos:Contents>
 </sos:Capabilities>      

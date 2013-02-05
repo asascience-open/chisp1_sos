@@ -10,13 +10,13 @@
   </gml:metaDataProperty>
   <gml:boundedBy>
     <gml:Envelope srsName="{{ station.location.horizontal_crs_name }}">
-      <gml:lowerCorner>{{ station.location.latitude }} {{ station.location.longitude }}</gml:lowerCorner>
-      <gml:upperCorner>{{ station.location.latitude }} {{ station.location.longitude }}</gml:upperCorner>
+      <gml:lowerCorner>{{ station.location.y }} {{ station.location.x }}</gml:lowerCorner>
+      <gml:upperCorner>{{ station.location.y }} {{ station.location.x }}</gml:upperCorner>
     </gml:Envelope>
   </gml:boundedBy>
   <om:member>
     <om:Observation>
-      <gml:description>{{ station.location.description }}</gml:description>
+      <gml:description>{{ station.description }}</gml:description>
       <om:samplingTime>
         <gml:TimePeriod>
           <gml:beginPosition>{{ min_time }}</gml:beginPosition>
@@ -48,7 +48,7 @@
             </gml:Envelope>
           </gml:boundedBy>
           <gml:location>
-            <gml:MultiPoint srsName="{{ station.location.horizontal_crs_name }}">
+            <gml:MultiPoint srsName="{{ station.location.horizontal_crs }}">
               <gml:pointMembers>
                 <gml:Point>
                   <gml:name>{{ station.location.id }}</gml:name>

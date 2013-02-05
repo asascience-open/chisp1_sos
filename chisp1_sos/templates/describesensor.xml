@@ -2,65 +2,64 @@
 <sml:SensorML xmlns:sml="http://www.opengis.net/sensorML/1.0.1" xmlns:gml="http://www.opengis.net/gml" xmlns:swe="http://www.opengis.net/swe/1.0.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sensorML/1.0.1 http://schemas.opengis.net/sensorML/1.0.1/sensorML.xsd" version="1.0.1">
   <sml:member>
     <sml:System>
-      <gml:description>{{ station.location.description }}</gml:description>
-      <gml:name>{{ station.location.id }}</gml:name>
+      <gml:description>{{ station.description }}</gml:description>
+      <gml:name>{{ station.name }}</gml:name>
       <sml:identification>
         <sml:IdentifierList>
           <sml:identifier name="stationId">
             <sml:Term definition="http://mmisw.org/ont/ioos/definition/stationID">
-              <sml:value>{{ station.location.id }}</sml:value>
+              <sml:value>{{ station.uid }}</sml:value>
             </sml:Term>
           </sml:identifier>
           <sml:identifier name="shortName">
             <sml:Term definition="http://mmisw.org/ont/ioos/definition/shortName">
-              <sml:value>{{ station.location.name }}</sml:value>
+              <sml:value>{{ station.name }}</sml:value>
             </sml:Term>
           </sml:identifier>
           <sml:identifier name="type">
             <sml:Term definition="http://mmisw.org/ont/ioos/definition/type">
-              <sml:value>{{ station.location.type }}</sml:value>
+              <sml:value>{{ station.type }}</sml:value>
             </sml:Term>
           </sml:identifier>
-          <sml:identifier name="huc">
-            <sml:Term definition="http://mmisw.org/ont/ioos/definition/huc">
-              <sml:value>{{ station.location.huc }}</sml:value>
+          <sml:identifier name="hydrolicUnitCode">
+            <sml:Term definition="http://mmisw.org/ont/ioos/definition/hydrolicUnitCode">
+              <sml:value>{{ station.get_property("huc") }}</sml:value>
             </sml:Term>
           </sml:identifier>
         </sml:IdentifierList>
       </sml:identification>
       <sml:contact xlink:role="http://mmisw.org/ont/ioos/definition/operator">
         <sml:ResponsibleParty>
-          <sml:organizationName>{{ station.organization.name }} ({{ station.organization.id }})</sml:organizationName>
+          <sml:organizationName>{{ station.get_property("organization_name") }} ({{ station.get_property("organization_id") }})</sml:organizationName>
           <sml:contactInfo>
             <sml:address>
-              <sml:country>US</sml:country>
+              <sml:country>{{ station.get_property("country") }}</sml:country>
             </sml:address>
           </sml:contactInfo>
         </sml:ResponsibleParty>
       </sml:contact>
-      <sml:contact xlink:role="http://mmisw.org/ont/ioos/definition/publisher" xlink:href="http://www.waterqualitydata.us">
+      <sml:contact xlink:role="http://mmisw.org/ont/ioos/definition/publisher" xlink:href="{{ publisher.get('url', None) }}">
         <sml:ResponsibleParty>
-          <sml:organizationName>National Water Quality Monitoring Council - WQP</sml:organizationName>
+          <sml:organizationName>{{ publisher.get("name", None) }}</sml:organizationName>
           <sml:contactInfo>
             <sml:address>
-              <sml:country>US</sml:country>
+              <sml:country>{{ station.get_property("country") }}</sml:country>
             </sml:address>
           </sml:contactInfo>
         </sml:ResponsibleParty>
       </sml:contact>
       <sml:location>
-        <gml:Point gml:id="{{ station.location.id }}" srsName="{{ station.location.horizontal_crs_name }}">
-          <gml:coordinates>{{ station.location.latitude }} {{ station.location.longitude }}</gml:coordinates>
+        <gml:Point gml:id="{{ station.uid }}" srsName="{{ station.location.horizontal_crs }}">
+          <gml:coordinates>{{ station.location.y }} {{ station.location.x }}</gml:coordinates>
         </gml:Point>
       </sml:location>
       <sml:components>
         <sml:ComponentList>
-          {%- for p in observedProperties %}
+          {%- for p in station.get_unique_members() %}
             <sml:component name="{{ p.name }}">
               <sml:System gml:id="sensor-{{ p.name }}">
-                <gml:description>{{ p.name }} ({{ p.short_name }})</gml:description>
+                <gml:description>{{ p.name }} ({{ p.get("description","No description") }})</gml:description>
                 <sml:identification xlink:href="{{ p.name }}"/>
-                <sml:component name="{{ p.name }}" xlink:href="{{ url_for('sos', _external=True)}}?request=DescribeSensor&amp;service=SOS&amp;version=1.0.0&amp;outputformat=text/xml;subtype=&quot;sensorML/1.0.1&quot;&amp;procedure={{ p.name }}" />
               </sml:System>
             </sml:component>
           {%- endfor %}
