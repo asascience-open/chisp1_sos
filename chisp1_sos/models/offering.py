@@ -36,8 +36,8 @@ class Offering(object):
         <sos:responseMode>inline</sos:responseMode>
     </sos:ObservationOffering>
     """
-    def __init__(self):
-        self.id = None
+    def __init__(self, **kwargs):
+        self.id = kwargs.get("id", None)
         self.name = None
         self.description = None
         self.bbox = box(-180,-90,180, 90).bounds
@@ -49,9 +49,10 @@ class Offering(object):
 
 
 class Network(Offering):
-    def __init__(self, offerings):
-        super(Network,self).__init__()
-        self.id = "network-all"
+    def __init__(self, offerings, **kwargs):
+        super(Network,self).__init__(**kwargs)
+        if self.id is None:
+            self.id = "network-all"
         self.name = "urn:network:all"
         self.description = "Network All"
         self.procedures = sorted(list(set([p for ps in offerings for p in ps.procedures])))
@@ -63,9 +64,10 @@ class Network(Offering):
 
 
 class Wqp(Offering):
-    def __init__(self):
-        super(Wqp,self).__init__()
-        self.id = "network-wqp-all"
+    def __init__(self, **kwargs):
+        super(Wqp,self).__init__(**kwargs)
+        if self.id is None:
+            self.id = "network-wqp"
         self.name = "urn:network:wqp"
         self.description = "All WQP stations available"
         self.features = ["urn:cgi:Feature:CGI:EarthOcean"]
@@ -76,9 +78,10 @@ class Wqp(Offering):
 
 
 class Pwqmn(Offering):
-    def __init__(self):
-        super(Pwqmn,self).__init__()
-        self.id = "network-pwqmn-all"
+    def __init__(self, **kwargs):
+        super(Pwqmn,self).__init__(**kwargs)
+        if self.id is None:
+            self.id = "network-pwqmn"
         self.name = "urn:network:pwqmn"
         self.description = "All PWQMN stations available"
         self.bbox = box(-180,-90,180, 90).bounds

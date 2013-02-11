@@ -25,14 +25,14 @@
       </om:samplingTime>
       <om:procedure>
         <om:Process>
-          <gml:member xlink:href="{{ station.location.id }}"/>
+          <gml:member xlink:href="{{ station.uid }}"/>
         </om:Process>
       </om:procedure>
       <om:observedProperty>
         <swe:CompositePhenomenon dimension="1" gml:id="observedproperties1">
           <gml:name>Response Observed Properties</gml:name>
-          {%- for op in observedProperties %}
-            <swe:component xlink:href="{{ op.name }}"/>
+          {%- for p in station.get_unique_members() %}
+            <swe:component xlink:href="{{ p.name }}"/>
           {%- endfor %}
         </swe:CompositePhenomenon>
       </om:observedProperty>
@@ -43,16 +43,16 @@
           </gml:metaDataProperty>
           <gml:boundedBy>
             <gml:Envelope srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
-              <gml:lowerCorner>{{ station.location.latitude }} {{ station.location.longitude }}</gml:lowerCorner>
-              <gml:upperCorner>{{ station.location.latitude }} {{ station.location.longitude }}</gml:upperCorner>
+              <gml:lowerCorner>{{ station.location.y }} {{ station.location.x }}</gml:lowerCorner>
+              <gml:upperCorner>{{ station.location.y }} {{ station.location.x }}</gml:upperCorner>
             </gml:Envelope>
           </gml:boundedBy>
           <gml:location>
             <gml:MultiPoint srsName="{{ station.location.horizontal_crs }}">
               <gml:pointMembers>
                 <gml:Point>
-                  <gml:name>{{ station.location.id }}</gml:name>
-                  <gml:pos>{{ station.location.latitude }} {{ station.location.longitude }}</gml:pos>
+                  <gml:name>{{ station.uid }}</gml:name>
+                  <gml:pos>{{ station.location.y }} {{ station.location.x }}</gml:pos>
                 </gml:Point>
               </gml:pointMembers>
             </gml:MultiPoint>
@@ -65,21 +65,21 @@
             <swe2:DataRecord>
               <swe2:field name="stationID">
                 <swe2:Text definition="http://mmisw.org/ont/ioos/definition/stationID">
-                  <swe2:value>{{ station.location.id }}</swe2:value>
+                  <swe2:value>{{ station.uid }}</swe2:value>
                 </swe2:Text>
               </swe2:field>
               <swe2:field name="location">
-                <swe2:Vector definition="http://www.opengis.net/def/property/OGC/0/PlatformLocation" referenceFrame="{{ station.location.horizontal_crs_name }}">
+                <swe2:Vector definition="http://www.opengis.net/def/property/OGC/0/PlatformLocation" referenceFrame="{{ station.get_property('horizontal_crs') }}">
                   <swe2:coordinate name="latitude">
                     <swe2:Quantity definition="http://mmisw.org/ont/cf/parameter/latitude">
                       <swe2:uom code="deg"/>
-                      <swe2:value>{{ station.location.latitude }}</swe2:value>
+                      <swe2:value>{{ station.location.y }}</swe2:value>
                     </swe2:Quantity>
                   </swe2:coordinate>
                   <swe2:coordinate name="longitude">
                     <swe2:Quantity definition="http://mmisw.org/ont/cf/parameter/longitude">
                       <swe2:uom code="deg"/>
-                      <swe2:value>{{ station.location.longitude }}</swe2:value>
+                      <swe2:value>{{ station.location.x }}</swe2:value>
                     </swe2:Quantity>
                   </swe2:coordinate>
                 </swe2:Vector>
@@ -90,15 +90,16 @@
                 </swe2:Time>
               </swe2:field>
               <swe2:field name="altitude">
-                <swe2:Quantity definition="http://mmisw.org/ont/cf/parameter/altitude" referenceFrame="{{ station.location.vertical_crs_name }}">
-                  <swe2:uom code="{{ station.location.vertical_measure_units }}"/>
-                  <swe2:value>{{ station.location.vertical_measure_value }}</swe2:value>
+                <swe2:Quantity definition="http://mmisw.org/ont/cf/parameter/altitude" referenceFrame="{{ station.get_property('vertical_crs') }}">
+                  <swe2:uom code="{{ station.get_property('vertical_units') }}"/>
+                  <swe2:value>{{ station.location.z }}</swe2:value>
                 </swe2:Quantity>
               </swe2:field>
-              {%- for op in observedProperties %}
-                <swe2:field name="{{ op.name }}">
-                  <swe2:Quantity definition="{{ op.name }}">
-                    <swe2:uom code="{{ op.units }}"/>
+              {%- for p in station.get_unique_members() %}
+                <swe2:field name="{{ p.name }}">
+                  <swe2:Quantity definition="{{ p.name }}">
+                    <swe2:uom code="{{ p.unit }}"/>
+                    <swe2:description code="{{ p.get('description','No description') }}"/>
                   </swe2:Quantity>
                 </swe2:field>
               {%- endfor %}

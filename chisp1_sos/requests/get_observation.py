@@ -2,81 +2,91 @@ from flask import render_template
 
 from chisp1_sos.models.station import get_station_feature
 
+from chisp1_sos.requests.get_capabilities import GetCapabilities
+
 import dateutil.parser as dateparser
 from datetime import timedelta
 import pytz
 
+from chisp1_sos import app
+
 class GetObservation(object):
     def __init__(self, request):
         self.offering = request.args.get("offering", request.args.get("OFFERING", request.args.get("Offering", None)))
+        self.procedure = request.args.get("procedure", request.args.get("PROCEDURE", request.args.get("Procedure", None)))
         self.obs_props = request.args.get("observedproperty", request.args.get("OBSERVEDPROPERTY", request.args.get("observedProperty", None)))
         self.eventtime = request.args.get("eventtime", request.args.get("EVENTTIME", request.args.get("Eventtime", None)))
 
-    def response(self):        
+    def response(self):
         if self.offering is None:
-                return render_template("error.xml", parameter="offering", value="Value missing")
+            return render_template("error.xml", parameter="offering", value="Value missing")
+        else:
+            possible_offerings = GetCapabilities.offerings.values()
+            if not self.offering in possible_offerings:
+                return render_template("error.xml", parameter="offering", value="Invalid value.  Possible values are: %s" % ",".join(possible_offerings))
+
+        if self.procedure is None:
+            return render_template("error.xml", parameter="procedure", value="This SOS server requires a procedure argument to GetObservation")
         if self.obs_props is None:
             return render_template("error.xml", parameter="observedProperty", value="Value missing")
         else:
+            # Remove duplicates and split
             self.obs_props = list(set(self.obs_props.split(",")))
     
+        provider = None
+        for key, value in GetCapabilities.offerings.iteritems():
+            if value == self.offering:
+                provider = key
+                break
 
-        station, publisher = get_station_feature(self.procedure)
+        # Strip out starting and ending parameters
+        starting = None
+        ending = None
+        if self.eventtime is not None and (isinstance(self.eventtime, unicode) or isinstance(self.eventtime, str)):
+            if self.eventtime.lower() != "latest":
+                starting = dateparser.parse(self.eventtime.split("/")[0])
+                ending = dateparser.parse(self.eventtime.split("/")[1])
+
+
+        station, publisher = get_station_feature(self.procedure, provider=provider, 
+                                                                 starting=starting, 
+                                                                 ending=ending,
+                                                                 observedProperties=self.obs_props)
 
         if station is None:
-            return render_template("error.xml", parameter="offering", value="Invalid value")
-
-
-        activities = wq.get_data(siteid=self.offering).activities
-
-        # Filter by observedProperties
-        activities = [a for a in activities if len(set(self.obs_props) & set([p.name for p in a.results])) > 0]
-
-        # Filter by eventtime
-        if self.eventtime is not None and (isinstance(self.eventtime, unicode) or isinstance(self.eventtime, str)):
-            if len(activities) > 0:
-                if self.eventtime.lower() == "latest":
-                    starting = max([a.start_time for a in activities])
-                    ending = starting + timedelta(minutes=1)
-                else:
-                    starting = dateparser.parse(self.eventtime.split("/")[0])
-                    ending = dateparser.parse(self.eventtime.split("/")[1])
-
-                activities = [a for a in activities if starting <= a.start_time and a.start_time <= ending]
+            return render_template("error.xml", parameter="procedure", value="Invalid value")
 
         min_time = "never"
         max_time = "never"
-        if len(activities) > 0:
-            # Extract timerange using Python here, instead of in Jinja2
-            all_times = [a.start_time for a in activities]
-            min_time = min(all_times)
-            max_time = max(all_times)
+        # At least one record was found
+        if len(station.time_range) > 0:
+            min_time = min(station.time_range).astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            max_time = max(station.time_range).astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-        # Get observedProperties
-        ops = []
-        op_names = []
-        for a in activities:
-            for r in a.results:
-                if r.name in self.obs_props and r.name not in op_names:
-                    op_names.append(r.name)
-                    ops.append(r)
-                
+        # If the latest was requested, strip it out now
+        if self.eventtime is not None and (isinstance(self.eventtime, unicode) or isinstance(self.eventtime, str)):
+            if self.eventtime.lower() == "latest":
+                station.elements = station.filter_by_time(starting=max_time, ending=max_time)
+                station.calculate_bounds()
+               
         rows = []
-        for a in activities:
-            match = False
-            row = [(a.start_time.astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))]
-            for obp in ops:
-                for r in a.results:
-                    if r.name == obp.name:
-                        row.append(unicode(r.value))
-                        match = True
-                        break
-                if match == True:
-                    break
-                else:
+        for point in station:
+            row = [(point.time.astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))]
+            for ob in self.obs_props:
+                m = None
+                try:
+                    m = point.get_member(name=ob)
+                except:
                     row.append("None")
+                    #row.append("None")
+                    #row.append("None")
+                else:
+                    row.append(unicode(m.get("value", None)))
+                    #row.append(m.get("method_id", None))
+                    #row.append(m.get("method_name", None))
+
             rows.append(",".join(row))
 
         data_block = "\n".join(rows)
 
-        return render_template("getobservation.xml", min_time=min_time, max_time=max_time, station=station, data_block=data_block, observedProperties=set(ops))
+        return render_template("getobservation.xml", min_time=min_time, max_time=max_time, station=station, data_block=data_block)
