@@ -49,8 +49,8 @@
         </sml:ResponsibleParty>
       </sml:contact>
       <sml:location>
-        <gml:Point gml:id="{{ station.uid }}" srsName="{{ station.location.horizontal_crs }}">
-          <gml:coordinates>{{ station.location.y }} {{ station.location.x }}</gml:coordinates>
+        <gml:Point gml:id="{{ station.uid }}" srsName="{{ station.get_property('horizontal_crs') }}">
+          <gml:coordinates>{{ station.location.y }} {{ station.location.x }} {{ station.location.z }}</gml:coordinates>
         </gml:Point>
       </sml:location>
       <sml:components>
