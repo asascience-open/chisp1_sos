@@ -81,8 +81,12 @@ def get_wqp(station_id, **kwargs):
     if obs_props is not None:
         params["characteristicName"] = ";".join(obs_props)
 
-    wq.start_time = kwargs.get("starting", None)
-    wq.end_time = kwargs.get("ending", None)
+    st = kwargs.get("starting", None)
+    et = kwargs.get("ending", None)
+    if st is not None:
+        wq.start_time = st
+    if et is not None:
+        wq.end_time = et
     
     s = wq.get_station(**params)
     if s is not None:
