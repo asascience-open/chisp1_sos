@@ -28,8 +28,8 @@ def sos():
         return Response(ds.response(), mimetype='text/xml')
 
     elif req.lower() == "getobservation":
-        go = GetObservation(request)
-        return Response(go.response(), mimetype='text/xml')
+        go,mime = GetObservation(request).response()
+        return Response(go, mimetype=mime)
             
     else:
         return Response(render_template("error.xml", parameter="request", value="Invalid value"), mimetype='text/xml')
