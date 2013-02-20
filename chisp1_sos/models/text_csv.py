@@ -27,6 +27,11 @@ def get_pwqmn(station_id, **kwargs):
         #conn.row_factory = sqlite3.Row
         cur = conn.cursor()
 
+        cur.execute("SELECT * from stations WHERE stations.STATION='%s'" % station_id)
+
+        if cur.fetchone() is None:
+            return None
+
         filters = []
         starting = kwargs.get("starting", None)
         ending = kwargs.get("ending", None)
