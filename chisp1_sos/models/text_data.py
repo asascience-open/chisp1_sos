@@ -47,14 +47,17 @@ def get_pwqmn(station_id, delimiter, **kwargs):
         ending = kwargs.get("ending", None)
         obs = kwargs.get("observedProperties", None)
         if starting is not None:
-            filters.append("AND data.DATE > %s" % starting.strftime("%Y-%m-%dT%H:%M:%S"))
+            filters.append("AND data.DATE > '%s'" % starting.strftime("%Y-%m-%dT%H:%M:%S"))
         if ending is not None:
-            filters.append("AND data.DATE < %s" % ending.strftime("%Y-%m-%dT%H:%M:%S"))
+            filters.append("AND data.DATE < '%s'" % ending.strftime("%Y-%m-%dT%H:%M:%S"))
         if obs is not None:
             obs = map(lambda x: "'%s'" % x, obs)
             filters.append("AND data.PARM in (%s)" % ",".join(obs))
 
-        cur.execute("SELECT * FROM data INNER JOIN stations ON data.STATION == stations.STATION WHERE stations.STATION='%s' %s ORDER BY DATE ASC" % (station_id, " ".join(filters)))
+        
+        query = "SELECT * FROM data INNER JOIN stations ON data.STATION == stations.STATION WHERE stations.STATION='%s' %s ORDER BY DATE ASC" % (station_id, " ".join(filters))
+        app.logger.debug(query)
+        cur.execute(query)
 
         buff = StringIO()
         writer = csv.writer(buff, delimiter=delimiter)
