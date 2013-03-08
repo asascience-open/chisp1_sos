@@ -70,6 +70,7 @@
         <ows:AllowedValues>
           <ows:Value>text/xml;subtype="om/1.0.0"</ows:Value>
           <ows:Value>text/csv</ows:Value>
+          <ows:Value>text/tsv</ows:Value>
         </ows:AllowedValues>
       </ows:Parameter>
     </ows:Operation>

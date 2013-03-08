@@ -1,7 +1,7 @@
 from flask import render_template
 
 from chisp1_sos.models.station import get_station_feature
-from chisp1_sos.models.text_csv import get_csv_data
+from chisp1_sos.models.text_data import get_text_data
 
 from chisp1_sos.requests.get_capabilities import GetCapabilities
 
@@ -50,12 +50,13 @@ class GetObservation(object):
                 ending = dateparser.parse(self.eventtime.split("/")[1])
 
 
-        if self.responseFormat == "text/csv":
-            csv_data = get_csv_data(self.procedure, provider=provider, 
-                                                    starting=starting, 
-                                                    ending=ending,
-                                                    observedProperties=self.obs_props)
-            return (csv_data, "text/csv")
+        if self.responseFormat == "text/csv" or self.responseFormat == "text/tsv":
+            text_data = get_text_data(self.procedure, self.responseFormat,
+                                                      provider=provider,
+                                                      starting=starting, 
+                                                      ending=ending,
+                                                      observedProperties=self.obs_props)
+            return (text_data, self.responseFormat)
 
         elif self.responseFormat == "text/xml;subtype=\"om/1.0.0\"":
             station, publisher = get_station_feature(self.procedure, provider=provider, 
