@@ -46,9 +46,9 @@ def get_pwqmn(station_id, **kwargs):
             ending = kwargs.get("ending", None)
             obs = kwargs.get("observedProperties", None)
             if starting is not None:
-                filters.append("AND DATE > %s" % starting.strftime("%Y-%m-%dT%H:%M:%S"))
+                filters.append("AND DATE > '%s'" % starting.strftime("%Y-%m-%dT%H:%M:%S"))
             if ending is not None:
-                filters.append("AND DATE < %s" % ending.strftime("%Y-%m-%dT%H:%M:%S"))
+                filters.append("AND DATE < '%s'" % ending.strftime("%Y-%m-%dT%H:%M:%S"))
             if obs is not None:
                 obs = map(lambda x: "'%s'" % x, obs)
                 filters.append("AND PARM in (%s)" % ",".join(obs))
