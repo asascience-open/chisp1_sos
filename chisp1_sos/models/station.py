@@ -68,16 +68,19 @@ def get_pwqmn(station_id, **kwargs):
             s.calculate_bounds()
             publisher = {"name": "Ontario Ministry of the Environment", "url" : "http://www.ene.gov.on.ca/environment/en/resources/collection/data_downloads/index.htm#PWQMN"}
             return s, publisher
+
     return None, None
 
 def get_wqp(station_id, **kwargs):
     wq = WqpRest()
 
     params = {
-        "siteid" : station_id
+        "siteid" : station_id,
+        "sampleMedia" : "Water"
     }
 
     obs_props = kwargs.get("observedProperties", None)
+
     if obs_props is not None:
         params["characteristicName"] = ";".join(obs_props)
 
