@@ -12,9 +12,8 @@ from shapely.geometry import Point as sPoint
 from pyoos.cdm.utils.member import Member
 
 def get_station_feature(station_id, provider=None, **kwargs):
-
     if provider is None or provider == "all":
-        s,p = get_pwqmn(station_id)
+        s,p = get_pwqmn(station_id, **kwargs)
         if s is None:
             return get_wqp(station_id, **kwargs)
         return s,p
