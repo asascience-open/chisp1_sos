@@ -50,7 +50,8 @@ def get_pwqmn(station_id, **kwargs):
                 filters.append("AND DATE < '%s'" % ending.strftime("%Y-%m-%dT%H:%M:%S"))
             if obs is not None:
                 obs = map(lambda x: "'%s'" % x, obs)
-                filters.append("AND PARM in (%s)" % ",".join(obs))
+                obs_str = ",".join(obs)
+                filters.append("AND (PARM_DESCRIPTION in (%s) OR PARM in (%s))" % (obs_str,obs_str))
 
             cur.execute("SELECT * FROM data WHERE STATION='%s' %s ORDER BY DATE ASC" % (station_id, " ".join(filters)))
             rows = cur.fetchall()

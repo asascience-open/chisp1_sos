@@ -59,7 +59,7 @@
             <sml:component name="{{ p.name }}">
               <sml:System gml:id="sensor-{{ p.name }}">
                 <gml:description>{{ p.name }} ({{ p.get("description","No description") }})</gml:description>
-                <sml:identification xlink:href="{{ p.name }}"/>
+                <sml:identification xlink:href="{{ p.get("description", p.name) }}"/>
               </sml:System>
             </sml:component>
           {%- endfor %}

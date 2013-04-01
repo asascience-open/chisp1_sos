@@ -52,7 +52,8 @@ def get_pwqmn(station_id, delimiter, **kwargs):
             filters.append("AND data.DATE < '%s'" % ending.strftime("%Y-%m-%dT%H:%M:%S"))
         if obs is not None:
             obs = map(lambda x: "'%s'" % x, obs)
-            filters.append("AND data.PARM in (%s)" % ",".join(obs))
+            obs_str = ",".join(obs)
+            filters.append("AND (data.PARM_DESCRIPTION in (%s) OR data.PARM in (%s))" % (obs_str,obs_str))
 
         
         query = "SELECT * FROM data INNER JOIN stations ON data.STATION == stations.STATION WHERE stations.STATION='%s' %s ORDER BY DATE ASC" % (station_id, " ".join(filters))
