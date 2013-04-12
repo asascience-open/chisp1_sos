@@ -72,8 +72,9 @@ def get_wqp(station_id, mimeType, **kwargs):
     wq = WqpRest()
 
     params = {
-        "siteid"   : station_id,
-        "mimeType" : mimeType
+        "siteid"      : station_id,
+        "mimeType"    : mimeType,
+        "sampleMedia" : "Water"
     }
 
     obs_props = kwargs.get("observedProperties", None)
